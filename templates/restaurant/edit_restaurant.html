@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Restaurant</title>
+    <title>Edit Restaurant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,10 +69,6 @@
         .inline-formset .form-group {
             margin-bottom: 10px;
             position: relative;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
         }
         .add-table, .remove-table {
             cursor: pointer;
@@ -93,61 +89,51 @@
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function updateTableGroupHeaders() {
-                var formGroups = document.querySelectorAll("#table-formset .form-group");
-                formGroups.forEach(function(group, index) {
-                    var header = group.querySelector(".group-header");
-                    if (!header) {
-                        header = document.createElement("h3");
-                        header.className = "group-header";
-                        group.insertBefore(header, group.firstChild);
-                    }
-                    header.innerText = "Table Group " + (index + 1);
-                });
-            }
-
-            function addRemoveEvent(button) {
-                button.addEventListener('click', function() {
-                    this.parentElement.remove();
-                    var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
-                    totalForms.value = document.getElementById("table-formset").children.length - 1; // minus the template itself
-                    updateTableGroupHeaders();
-                });
-            }
-
             document.getElementById("add-table").addEventListener("click", function() {
                 var formsetDiv = document.getElementById("table-formset");
                 var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
                 var currentFormCount = parseInt(totalForms.value);
-                var emptyFormTemplate = document.getElementById("empty-form-template");
+                var newForm = formsetDiv.children[formsetDiv.children.length - 1].cloneNode(true);
 
-                if (emptyFormTemplate) {
-                    var newForm = emptyFormTemplate.cloneNode(true);
-                    newForm.style.display = 'block';
-                    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentFormCount);
+                // Update the form number for each form field
+                newForm.innerHTML = newForm.innerHTML.replace(/tables-\d+/g, 'tables-' + currentFormCount);
 
-                    // Add remove button to the cloned form
-                    var removeButton = newForm.querySelector('.remove-table');
-                    addRemoveEvent(removeButton);
-
-                    formsetDiv.appendChild(newForm);
-                    totalForms.value = currentFormCount + 1;
-                    updateTableGroupHeaders();
+                // Clear the input values in the cloned form
+                var inputs = newForm.getElementsByTagName('input');
+                for (var i = 0; i < inputs.length; i++) {
+                    if (inputs[i].type === 'number') {
+                        inputs[i].value = '';
+                    }
                 }
+
+                // Remove any delete button from the cloned form and add a new one
+                var removeButton = document.createElement('span');
+                removeButton.className = 'remove-table';
+                removeButton.innerText = '- Remove';
+                removeButton.addEventListener('click', function() {
+                    this.parentElement.remove();
+                    totalForms.value = formsetDiv.children.length;
+                });
+                newForm.appendChild(removeButton);
+
+                formsetDiv.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
             });
 
             var removeButtons = document.getElementsByClassName('remove-table');
             for (var i = 0; i < removeButtons.length; i++) {
-                addRemoveEvent(removeButtons[i]);
+                removeButtons[i].addEventListener('click', function() {
+                    this.parentElement.remove();
+                    var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
+                    totalForms.value = document.getElementById("table-formset").children.length;
+                });
             }
-
-            updateTableGroupHeaders();
         });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Create Restaurant</h1>
+        <h1>{% if restaurant %}Edit{% else %}Create{% endif %} Restaurant</h1>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="id_name">Name:</label>
@@ -180,7 +166,6 @@
                 {{ formset.management_form }}
                 {% for form in formset %}
                     <div class="form-group">
-                        <h3 class="group-header">Table Group {{ forloop.counter }}</h3>
                         <label for="{{ form.size.id_for_label }}">Table Size (persons):</label>
                         {{ form.size }}
                         <label for="{{ form.count.id_for_label }}">Number of Tables:</label>
@@ -192,20 +177,35 @@
                     </div>
                 {% endfor %}
             </div>
-            <div id="empty-form-template" style="display: none;">
-                <div class="form-group">
-                    <h3 class="group-header">Table Group __prefix__</h3>
-                    <label for="id_tables-__prefix__-size">Table Size (persons):</label>
-                    <input type="number" name="tables-__prefix__-size" id="id_tables-__prefix__-size" min="1">
-                    <label for="id_tables-__prefix__-count">Number of Tables:</label>
-                    <input type="number" name="tables-__prefix__-count" id="id_tables-__prefix__-count" min="1">
-                    <span class="remove-table">- Remove</span>
-                </div>
-            </div>
             <span id="add-table" class="add-table">+ Add another table</span>
 
             <button type="submit">Save</button>
         </form>
+
+        <!-- Anzeigen der Fehler -->
+        {% if form.errors %}
+            <div class="form-errors">
+                <h2>Form Errors:</h2>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if formset.errors %}
+            <div class="formset-errors">
+                <h2>Formset Errors:</h2>
+                <ul>
+                    {% for form in formset %}
+                        {% for field, errors in form.errors.items %}
+                            <li>{{ field }}: {{ errors }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>

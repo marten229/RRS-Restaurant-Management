@@ -9,7 +9,9 @@ class Cuisine(models.Model):
 class Restaurant(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    address = models.CharField(max_length=255)
+    street = models.CharField(max_length=255, default='Unknown Street')
+    city = models.CharField(max_length=100, default='Unknown City')
+    house_number = models.CharField(max_length=10, default='0')
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=15)
     opening_hours = models.CharField(max_length=255)
@@ -23,7 +25,7 @@ class Restaurant(models.Model):
 class Table(models.Model):
     restaurant = models.ForeignKey(Restaurant, related_name='tables', on_delete=models.CASCADE)
     size = models.IntegerField()
-    count = models.IntegerField()
+    count = models.IntegerField(default=1)  # Hinzufügen des count-Feldes
 
     def __str__(self):
-        return f'{self.size} Personen, {self.count} Tische'
+        return f'Tisch {self.id}: {self.size} Personen, {self.count} Tische'
