@@ -33,6 +33,7 @@
         }
         input[type="text"],
         input[type="email"],
+        input[type="time"],
         textarea,
         select {
             width: 100%;
@@ -74,13 +75,13 @@
             border-radius: 5px;
             background-color: #f9f9f9;
         }
-        .add-table, .remove-table {
+        .add-item, .remove-item, .add-table, .remove-table {
             cursor: pointer;
             color: blue;
             margin-top: 10px;
             display: inline-block;
         }
-        .remove-table {
+        .remove-item, .remove-table {
             color: red;
             position: absolute;
             top: 0;
@@ -93,8 +94,8 @@
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function updateTableGroupHeaders() {
-                var formGroups = document.querySelectorAll("#table-formset .form-group");
+            function updateGroupHeaders() {
+                var formGroups = document.querySelectorAll("#table-formset .form-group, #menu-formset .form-group");
                 formGroups.forEach(function(group, index) {
                     var header = group.querySelector(".group-header");
                     if (!header) {
@@ -102,16 +103,16 @@
                         header.className = "group-header";
                         group.insertBefore(header, group.firstChild);
                     }
-                    header.innerText = "Table Group " + (index + 1);
+                    header.innerText = "Group " + (index + 1);
                 });
             }
 
             function addRemoveEvent(button) {
                 button.addEventListener('click', function() {
                     this.parentElement.remove();
-                    var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
-                    totalForms.value = document.getElementById("table-formset").children.length - 1; // minus the template itself
-                    updateTableGroupHeaders();
+                    var totalForms = document.getElementById("id_tables-TOTAL_FORMS") || document.getElementById("id_menu_items-TOTAL_FORMS");
+                    totalForms.value = document.getElementById("table-formset").children.length - 1 || document.getElementById("menu-formset").children.length - 1;
+                    updateGroupHeaders();
                 });
             }
 
@@ -119,29 +120,53 @@
                 var formsetDiv = document.getElementById("table-formset");
                 var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
                 var currentFormCount = parseInt(totalForms.value);
-                var emptyFormTemplate = document.getElementById("empty-form-template");
+                var emptyFormTemplate = document.getElementById("empty-table-form-template");
 
                 if (emptyFormTemplate) {
                     var newForm = emptyFormTemplate.cloneNode(true);
                     newForm.style.display = 'block';
                     newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentFormCount);
 
-                    // Add remove button to the cloned form
                     var removeButton = newForm.querySelector('.remove-table');
                     addRemoveEvent(removeButton);
 
                     formsetDiv.appendChild(newForm);
                     totalForms.value = currentFormCount + 1;
-                    updateTableGroupHeaders();
+                    updateGroupHeaders();
                 }
             });
 
-            var removeButtons = document.getElementsByClassName('remove-table');
+            document.getElementById("add-item").addEventListener("click", function() {
+                var formsetDiv = document.getElementById("menu-formset");
+                var totalForms = document.getElementById("id_menu_items-TOTAL_FORMS");
+                var currentFormCount = parseInt(totalForms.value);
+                var emptyFormTemplate = document.getElementById("empty-item-form-template");
+
+                if (emptyFormTemplate) {
+                    var newForm = emptyFormTemplate.cloneNode(true);
+                    newForm.style.display = 'block';
+                    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentFormCount);
+
+                    var removeButton = newForm.querySelector('.remove-item');
+                    addRemoveEvent(removeButton);
+
+                    formsetDiv.appendChild(newForm);
+                    totalForms.value = currentFormCount + 1;
+                    updateGroupHeaders();
+                }
+            });
+
+            var removeButtons = document.getElementsByClassName('remove-item');
             for (var i = 0; i < removeButtons.length; i++) {
                 addRemoveEvent(removeButtons[i]);
             }
 
-            updateTableGroupHeaders();
+            removeButtons = document.getElementsByClassName('remove-table');
+            for (var i = 0; i < removeButtons.length; i++) {
+                addRemoveEvent(removeButtons[i]);
+            }
+
+            updateGroupHeaders();
         });
     </script>
 </head>
@@ -164,10 +189,14 @@
             {{ form.contact_email }}
             <label for="id_contact_phone">Contact Phone:</label>
             {{ form.contact_phone }}
-            <label for="id_opening_hours">Opening Hours:</label>
-            {{ form.opening_hours }}
-            <label for="id_menu">Menu:</label>
-            {{ form.menu }}
+            <label for="id_opening_time">Opening Time:</label>
+            {{ form.opening_time }}
+            <label for="id_closing_time">Closing Time:</label>
+            {{ form.closing_time }}
+            <label for="id_opening_days">Opening Days:</label>
+            <div class="checkbox-group">
+                {{ form.opening_days }}
+            </div>
             <label for="id_photo">Photo:</label>
             {{ form.photo }}
             <label for="id_cuisines">Cuisines:</label>
@@ -177,8 +206,8 @@
 
             <div class="inline-formset" id="table-formset">
                 <h2>Tables</h2>
-                {{ formset.management_form }}
-                {% for form in formset %}
+                {{ table_formset.management_form }}
+                {% for form in table_formset %}
                     <div class="form-group">
                         <h3 class="group-header">Table Group {{ forloop.counter }}</h3>
                         <label for="{{ form.size.id_for_label }}">Table Size (persons):</label>
@@ -192,7 +221,7 @@
                     </div>
                 {% endfor %}
             </div>
-            <div id="empty-form-template" style="display: none;">
+            <div id="empty-table-form-template" style="display: none;">
                 <div class="form-group">
                     <h3 class="group-header">Table Group __prefix__</h3>
                     <label for="id_tables-__prefix__-size">Table Size (persons):</label>
@@ -204,8 +233,75 @@
             </div>
             <span id="add-table" class="add-table">+ Add another table</span>
 
+            <div class="inline-formset" id="menu-formset">
+                <h2>Menu</h2>
+                {{ menu_formset.management_form }}
+                {% for form in menu_formset %}
+                    <div class="form-group">
+                        <h3 class="group-header">Menu Item {{ forloop.counter }}</h3>
+                        <label for="{{ form.name.id_for_label }}">Name:</label>
+                        {{ form.name }}
+                        <label for="{{ form.price.id_for_label }}">Price (€):</label>
+                        {{ form.price }}
+                        {% if form.instance.pk %}
+                            <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
+                        {% endif %}
+                        <span class="remove-item">- Remove</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="empty-item-form-template" style="display: none;">
+                <div class="form-group">
+                    <h3 class="group-header">Menu Item __prefix__</h3>
+                    <label for="id_menu_items-__prefix__-name">Name:</label>
+                    <input type="text" name="menu_items-__prefix__-name" id="id_menu_items-__prefix__-name">
+                    <label for="id_menu_items-__prefix__-price">Price (€):</label>
+                    <input type="number" step="0.01" name="menu_items-__prefix__-price" id="id_menu_items-__prefix__-price" min="0">
+                    <span class="remove-item">- Remove</span>
+                </div>
+            </div>
+            <span id="add-item" class="add-item">+ Add another menu item</span>
+
             <button type="submit">Save</button>
         </form>
+
+        <!-- Anzeigen der Fehler -->
+        {% if form.errors %}
+            <div class="form-errors">
+                <h2>Form Errors:</h2>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if table_formset.errors %}
+            <div class="formset-errors">
+                <h2>Table Formset Errors:</h2>
+                <ul>
+                    {% for form in table_formset %}
+                        {% for field, errors in form.errors.items %}
+                            <li>{{ field }}: {{ errors }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if menu_formset.errors %}
+            <div class="formset-errors">
+                <h2>Menu Formset Errors:</h2>
+                <ul>
+                    {% for form in menu_formset %}
+                        {% for field, errors in form.errors.items %}
+                            <li>{{ field }}: {{ errors }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>

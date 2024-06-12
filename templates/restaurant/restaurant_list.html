@@ -50,12 +50,22 @@
                 {% endif %}
                 <div class="restaurant-details">
                     <h2>{{ restaurant.name }}</h2>
-                    <p><strong>Address:</strong> {{ restaurant.address }}</p>
+                    <p><strong>Address:</strong> {{ restaurant.street }}, {{ restaurant.house_number }}, {{ restaurant.city }}</p>
                     <p><strong>Contact Email:</strong> {{ restaurant.contact_email }}</p>
                     <p><strong>Contact Phone:</strong> {{ restaurant.contact_phone }}</p>
-                    <p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
+                    <p><strong>Opening Hours:</strong> {{ restaurant.opening_time }} - {{ restaurant.closing_time }}</p>
+                    <p><strong>Opening Days:</strong> 
+                        {% for day in restaurant.opening_days.all %}
+                            {{ day.get_day_display }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
                     <p><strong>Description:</strong> {{ restaurant.description }}</p>
-                    <p><strong>Menu:</strong> {{ restaurant.menu }}</p>
+                    <p><strong>Menu:</strong></p>
+                    <ul>
+                        {% for item in restaurant.menu_items.all %}
+                            <li>{{ item.name }} - {{ item.price }}€</li>
+                        {% endfor %}
+                    </ul>
                     <p><strong>Cuisines:</strong> 
                         {% for cuisine in restaurant.cuisines.all %}
                             {{ cuisine.name }}{% if not forloop.last %}, {% endif %}
