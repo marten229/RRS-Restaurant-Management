@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Restaurant, Cuisine, Table, OpeningDay, MenuItem
+from .models import Restaurant, Cuisine, OpeningDay, MenuItem
+from TableManagement.models import Table
 
 class TableForm(forms.ModelForm):
     count = forms.IntegerField(min_value=1, label="Number of Tables", required=True)

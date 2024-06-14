@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import RestaurantForm, TableFormSet, MenuItemFormSet
-from .models import Restaurant, Table
+from .models import Restaurant
+from TableManagement.models import Table
 
 def create_restaurant(request):
     if request.method == 'POST':

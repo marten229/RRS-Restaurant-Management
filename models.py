@@ -38,14 +38,6 @@ class Restaurant(models.Model):
     def __str__(self):
         return self.name
 
-class Table(models.Model):
-    restaurant = models.ForeignKey(Restaurant, related_name='tables', on_delete=models.CASCADE)
-    size = models.IntegerField()
-    count = models.IntegerField(default=1)
-
-    def __str__(self):
-        return f'Tisch {self.id}: {self.size} Personen, {self.count} Tische'
-
 class MenuItem(models.Model):
     restaurant = models.ForeignKey(Restaurant, related_name='menu_items', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
