@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Restaurant</title>
+    <title>Restaurant Bearbeiten</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -103,7 +103,7 @@
                         header.className = "group-header";
                         group.insertBefore(header, group.firstChild);
                     }
-                    header.innerText = "Group " + (index + 1);
+                    header.innerText = "Gruppe " + (index + 1);
                 });
             }
 
@@ -172,103 +172,103 @@
 </head>
 <body>
     <div class="container">
-        <h1>Edit Restaurant</h1>
+        <h1>Restaurant Bearbeiten</h1>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="id_name">Name:</label>
             {{ form.name }}
-            <label for="id_description">Description:</label>
+            <label for="id_description">Beschreibung:</label>
             {{ form.description }}
-            <label for="id_street">Street:</label>
+            <label for="id_street">Straße:</label>
             {{ form.street }}
-            <label for="id_city">City:</label>
+            <label for="id_city">Stadt:</label>
             {{ form.city }}
-            <label for="id_house_number">House Number:</label>
+            <label for="id_house_number">Hausnummer:</label>
             {{ form.house_number }}
-            <label for="id_contact_email">Contact Email:</label>
+            <label for="id_contact_email">Kontakt E-Mail:</label>
             {{ form.contact_email }}
-            <label for="id_contact_phone">Contact Phone:</label>
+            <label for="id_contact_phone">Kontakt Telefon:</label>
             {{ form.contact_phone }}
-            <label for="id_opening_time">Opening Time:</label>
+            <label for="id_opening_time">Öffnungszeit:</label>
             {{ form.opening_time }}
-            <label for="id_closing_time">Closing Time:</label>
+            <label for="id_closing_time">Schließzeit:</label>
             {{ form.closing_time }}
-            <label for="id_opening_days">Opening Days:</label>
+            <label for="id_opening_days">Öffnungstage:</label>
             <div class="checkbox-group">
                 {{ form.opening_days }}
             </div>
-            <label for="id_photo">Photo:</label>
+            <label for="id_photo">Foto:</label>
             {{ form.photo }}
-            <label for="id_cuisines">Cuisines:</label>
+            <label for="id_cuisines">Küchen:</label>
             <div class="checkbox-group">
                 {{ form.cuisines }}
             </div>
 
             <div class="inline-formset" id="table-formset">
-                <h2>Tables</h2>
+                <h2>Tische</h2>
                 {{ table_formset.management_form }}
                 {% for form in table_formset %}
                     <div class="form-group">
-                        <h3 class="group-header">Table Group {{ forloop.counter }}</h3>
-                        <label for="{{ form.size.id_for_label }}">Table Size (persons):</label>
+                        <h3 class="group-header">Tischgruppe {{ forloop.counter }}</h3>
+                        <label for="{{ form.size.id_for_label }}">Tischgröße (Personen):</label>
                         {{ form.size }}
-                        <label for="{{ form.count.id_for_label }}">Number of Tables:</label>
+                        <label for="{{ form.count.id_for_label }}">Anzahl der Tische:</label>
                         {{ form.count }}
                         {% if form.instance.pk %}
                             <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
                         {% endif %}
-                        <span class="remove-table">- Remove</span>
+                        <span class="remove-table">- Entfernen</span>
                     </div>
                 {% endfor %}
             </div>
             <div id="empty-table-form-template" style="display: none;">
                 <div class="form-group">
-                    <h3 class="group-header">Table Group __prefix__</h3>
-                    <label for="id_tables-__prefix__-size">Table Size (persons):</label>
+                    <h3 class="group-header">Tischgruppe __prefix__</h3>
+                    <label for="id_tables-__prefix__-size">Tischgröße (Personen):</label>
                     <input type="number" name="tables-__prefix__-size" id="id_tables-__prefix__-size" min="1">
-                    <label for="id_tables-__prefix__-count">Number of Tables:</label>
+                    <label for="id_tables-__prefix__-count">Anzahl der Tische:</label>
                     <input type="number" name="tables-__prefix__-count" id="id_tables-__prefix__-count" min="1">
-                    <span class="remove-table">- Remove</span>
+                    <span class="remove-table">- Entfernen</span>
                 </div>
             </div>
-            <span id="add-table" class="add-table">+ Add another table</span>
+            <span id="add-table" class="add-table">+ Weiteren Tisch hinzufügen</span>
 
             <div class="inline-formset" id="menu-formset">
-                <h2>Menu</h2>
+                <h2>Speisekarte</h2>
                 {{ menu_formset.management_form }}
                 {% for form in menu_formset %}
                     <div class="form-group">
-                        <h3 class="group-header">Menu Item {{ forloop.counter }}</h3>
+                        <h3 class="group-header">Menüpunkt {{ forloop.counter }}</h3>
                         <label for="{{ form.name.id_for_label }}">Name:</label>
                         {{ form.name }}
-                        <label for="{{ form.price.id_for_label }}">Price (€):</label>
+                        <label for="{{ form.price.id_for_label }}">Preis (€):</label>
                         {{ form.price }}
                         {% if form.instance.pk %}
                             <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
                         {% endif %}
-                        <span class="remove-item">- Remove</span>
+                        <span class="remove-item">- Entfernen</span>
                     </div>
                 {% endfor %}
             </div>
             <div id="empty-item-form-template" style="display: none;">
                 <div class="form-group">
-                    <h3 class="group-header">Menu Item __prefix__</h3>
+                    <h3 class="group-header">Menüpunkt __prefix__</h3>
                     <label for="id_menu_items-__prefix__-name">Name:</label>
                     <input type="text" name="menu_items-__prefix__-name" id="id_menu_items-__prefix__-name">
-                    <label for="id_menu_items-__prefix__-price">Price (€):</label>
+                    <label for="id_menu_items-__prefix__-price">Preis (€):</label>
                     <input type="number" step="0.01" name="menu_items-__prefix__-price" id="id_menu_items-__prefix__-price" min="0">
-                    <span class="remove-item">- Remove</span>
+                    <span class="remove-item">- Entfernen</span>
                 </div>
             </div>
-            <span id="add-item" class="add-item">+ Add another menu item</span>
+            <span id="add-item" class="add-item">+ Weiteren Menüpunkt hinzufügen</span>
 
-            <button type="submit">Save</button>
+            <button type="submit">Speichern</button>
         </form>
 
         <!-- Anzeigen der Fehler -->
         {% if form.errors %}
             <div class="form-errors">
-                <h2>Form Errors:</h2>
+                <h2>Formfehler:</h2>
                 <ul>
                     {% for field, errors in form.errors.items %}
                         <li>{{ field }}: {{ errors }}</li>
@@ -279,7 +279,7 @@
 
         {% if table_formset.errors %}
             <div class="formset-errors">
-                <h2>Table Formset Errors:</h2>
+                <h2>Fehler im Tisch-Formularsatz:</h2>
                 <ul>
                     {% for form in table_formset %}
                         {% for field, errors in form.errors.items %}
@@ -292,7 +292,7 @@
 
         {% if menu_formset.errors %}
             <div class="formset-errors">
-                <h2>Menu Formset Errors:</h2>
+                <h2>Fehler im Menü-Formularsatz:</h2>
                 <ul>
                     {% for form in menu_formset %}
                         {% for field, errors in form.errors.items %}

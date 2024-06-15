@@ -1,4 +1,5 @@
 from django.db import models
+#from TableManagement.models import Table
 
 class Cuisine(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -34,6 +35,12 @@ class Restaurant(models.Model):
     opening_days = models.ManyToManyField(OpeningDay)
     photo = models.ImageField(upload_to='restaurant_photos/')
     cuisines = models.ManyToManyField(Cuisine)
+
+    def check_ifopendayandtime(self, day, time):
+        if day in self.opening_days.all():
+            if self.opening_time <= time <= self.closing_time:
+                return True
+        return False
 
     def __str__(self):
         return self.name
