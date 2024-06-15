@@ -37,8 +37,8 @@ def restaurant_list(request):
     restaurants = Restaurant.objects.all()
     return render(request, 'restaurant/restaurant_list.html', {'restaurants': restaurants})
 
-def edit_restaurant(request, id):
-    restaurant = get_object_or_404(Restaurant, id=id)
+def edit_restaurant(request, pk):
+    restaurant = get_object_or_404(Restaurant, id=pk)
     if request.method == 'POST':
         form = RestaurantForm(request.POST, request.FILES, instance=restaurant)
         table_formset = TableFormSet(request.POST, instance=restaurant)
