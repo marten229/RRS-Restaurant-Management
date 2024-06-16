@@ -36,11 +36,13 @@ class Restaurant(models.Model):
     photo = models.ImageField(upload_to='restaurant_photos/')
     cuisines = models.ManyToManyField(Cuisine)
 
-    def check_ifopendayandtime(self, day, time):
-        if day in self.opening_days.all():
+    def check_ifopendayandtime(self, date, time): 
+        day_short = date.strftime('%a')[:3]
+        if self.opening_days.filter(day=day_short).exists():
             if self.opening_time <= time <= self.closing_time:
                 return True
         return False
+    
 
     def __str__(self):
         return self.name

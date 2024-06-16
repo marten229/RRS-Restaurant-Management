@@ -28,12 +28,7 @@ def create_restaurant(request):
             
             request.user.restaurants.add(restaurant)
             
-            return redirect('restaurant_list')
-        else:
-            # Debugging Informationen hinzufügen
-            print(form.errors)
-            print(table_formset.errors)
-            print(menu_formset.errors)
+            return redirect('dashboard')
     else:
         form = RestaurantForm()
         table_formset = TableFormSet()
@@ -51,8 +46,8 @@ def restaurant_list(request):
 
 @login_required
 @role_and_restaurant_required(['administrator', 'restaurant_owner'])
-def edit_restaurant(request, id):
-    restaurant = get_object_or_404(Restaurant, id=id)
+def edit_restaurant(request, pk):
+    restaurant = get_object_or_404(Restaurant, id=pk)
     TableFormSet = inlineformset_factory(Restaurant, Table, form=TableForm, extra=0, can_delete=True)
     if request.method == 'POST':
         form = RestaurantForm(request.POST, request.FILES, instance=restaurant)
