@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Bearbeiten</title>
+    <title>Edit Restaurant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -94,181 +94,163 @@
     </style>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            function updateGroupHeaders() {
-                var formGroups = document.querySelectorAll("#table-formset .form-group, #menu-formset .form-group");
-                formGroups.forEach(function(group, index) {
-                    var header = group.querySelector(".group-header");
-                    if (!header) {
-                        header = document.createElement("h3");
-                        header.className = "group-header";
-                        group.insertBefore(header, group.firstChild);
-                    }
-                    header.innerText = "Gruppe " + (index + 1);
+            function updateTotalForms(formsetDiv, totalFormsId) {
+                var totalForms = document.getElementById(totalFormsId);
+                var formGroups = formsetDiv.querySelectorAll(".form-group:not(.removed)");
+                totalForms.value = formGroups.length;
+            }
+
+            function addRemoveEvent(button, formsetDiv, totalFormsId) {
+                button.addEventListener('click', function() {
+                    var formGroup = this.parentElement;
+                    formGroup.classList.add('removed');
+                    formGroup.style.display = 'none';
+                    updateTotalForms(formsetDiv, totalFormsId);
                 });
             }
 
-            function addRemoveEvent(button) {
-                button.addEventListener('click', function() {
-                    this.parentElement.remove();
-                    var totalForms = document.getElementById("id_tables-TOTAL_FORMS") || document.getElementById("id_menu_items-TOTAL_FORMS");
-                    totalForms.value = document.getElementById("table-formset").children.length - 1 || document.getElementById("menu-formset").children.length - 1;
-                    updateGroupHeaders();
-                });
+            function addForm(formsetDiv, totalFormsId, templateId, removeClass) {
+                var totalForms = document.getElementById(totalFormsId);
+                var currentFormCount = parseInt(totalForms.value);
+                var emptyFormTemplate = document.getElementById(templateId).innerHTML;
+
+                var newForm = document.createElement("div");
+                newForm.classList.add("form-group");
+                newForm.innerHTML = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+                newForm.style.display = 'block';
+
+                var removeButton = newForm.querySelector(removeClass);
+                addRemoveEvent(removeButton, formsetDiv, totalFormsId);
+
+                formsetDiv.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
             }
 
             document.getElementById("add-table").addEventListener("click", function() {
-                var formsetDiv = document.getElementById("table-formset");
-                var totalForms = document.getElementById("id_tables-TOTAL_FORMS");
-                var currentFormCount = parseInt(totalForms.value);
-                var emptyFormTemplate = document.getElementById("empty-table-form-template");
-
-                if (emptyFormTemplate) {
-                    var newForm = emptyFormTemplate.cloneNode(true);
-                    newForm.style.display = 'block';
-                    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentFormCount);
-
-                    var removeButton = newForm.querySelector('.remove-table');
-                    addRemoveEvent(removeButton);
-
-                    formsetDiv.appendChild(newForm);
-                    totalForms.value = currentFormCount + 1;
-                    updateGroupHeaders();
-                }
+                addForm(document.getElementById("table-formset"), "id_tables-TOTAL_FORMS", "empty-table-form-template", '.remove-table');
             });
 
             document.getElementById("add-item").addEventListener("click", function() {
-                var formsetDiv = document.getElementById("menu-formset");
-                var totalForms = document.getElementById("id_menu_items-TOTAL_FORMS");
-                var currentFormCount = parseInt(totalForms.value);
-                var emptyFormTemplate = document.getElementById("empty-item-form-template");
-
-                if (emptyFormTemplate) {
-                    var newForm = emptyFormTemplate.cloneNode(true);
-                    newForm.style.display = 'block';
-                    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, currentFormCount);
-
-                    var removeButton = newForm.querySelector('.remove-item');
-                    addRemoveEvent(removeButton);
-
-                    formsetDiv.appendChild(newForm);
-                    totalForms.value = currentFormCount + 1;
-                    updateGroupHeaders();
-                }
+                addForm(document.getElementById("menu-formset"), "id_menu_items-TOTAL_FORMS", "empty-item-form-template", '.remove-item');
             });
 
-            var removeButtons = document.getElementsByClassName('remove-item');
-            for (var i = 0; i < removeButtons.length; i++) {
-                addRemoveEvent(removeButtons[i]);
-            }
+            var tableFormset = document.getElementById("table-formset");
+            var menuFormset = document.getElementById("menu-formset");
 
-            removeButtons = document.getElementsByClassName('remove-table');
-            for (var i = 0; i < removeButtons.length; i++) {
-                addRemoveEvent(removeButtons[i]);
-            }
+            var removeButtons = document.querySelectorAll('.remove-table');
+            removeButtons.forEach(function(button) {
+                addRemoveEvent(button, tableFormset, "id_tables-TOTAL_FORMS");
+            });
 
-            updateGroupHeaders();
+            removeButtons = document.querySelectorAll('.remove-item');
+            removeButtons.forEach(function(button) {
+                addRemoveEvent(button, menuFormset, "id_menu_items-TOTAL_FORMS");
+            });
+
+            updateTotalForms(tableFormset, "id_tables-TOTAL_FORMS");
+            updateTotalForms(menuFormset, "id_menu_items-TOTAL_FORMS");
         });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Restaurant Bearbeiten</h1>
+        <h1>Edit Restaurant</h1>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="id_name">Name:</label>
             {{ form.name }}
-            <label for="id_description">Beschreibung:</label>
+            <label for="id_description">Description:</label>
             {{ form.description }}
-            <label for="id_street">Straße:</label>
+            <label for="id_street">Street:</label>
             {{ form.street }}
-            <label for="id_city">Stadt:</label>
+            <label for="id_city">City:</label>
             {{ form.city }}
-            <label for="id_house_number">Hausnummer:</label>
+            <label for="id_house_number">House Number:</label>
             {{ form.house_number }}
-            <label for="id_contact_email">Kontakt E-Mail:</label>
+            <label for="id_contact_email">Contact Email:</label>
             {{ form.contact_email }}
-            <label for="id_contact_phone">Kontakt Telefon:</label>
+            <label for="id_contact_phone">Contact Phone:</label>
             {{ form.contact_phone }}
-            <label for="id_opening_time">Öffnungszeit:</label>
+            <label for="id_opening_time">Opening Time:</label>
             {{ form.opening_time }}
-            <label for="id_closing_time">Schließzeit:</label>
+            <label for="id_closing_time">Closing Time:</label>
             {{ form.closing_time }}
-            <label for="id_opening_days">Öffnungstage:</label>
+            <label for="id_opening_days">Opening Days:</label>
             <div class="checkbox-group">
                 {{ form.opening_days }}
             </div>
-            <label for="id_photo">Foto:</label>
+            <label for="id_photo">Photo:</label>
             {{ form.photo }}
-            <label for="id_cuisines">Küchen:</label>
+            <label for="id_cuisines">Cuisines:</label>
             <div class="checkbox-group">
                 {{ form.cuisines }}
             </div>
 
             <div class="inline-formset" id="table-formset">
-                <h2>Tische</h2>
+                <h2>Tables</h2>
                 {{ table_formset.management_form }}
                 {% for form in table_formset %}
                     <div class="form-group">
-                        <h3 class="group-header">Tischgruppe {{ forloop.counter }}</h3>
-                        <label for="{{ form.size.id_for_label }}">Tischgröße (Personen):</label>
+                        <h3 class="group-header">Table Group {{ forloop.counter }}</h3>
+                        <label for="{{ form.size.id_for_label }}">Table Size (persons):</label>
                         {{ form.size }}
-                        <label for="{{ form.count.id_for_label }}">Anzahl der Tische:</label>
+                        <label for="{{ form.count.id_for_label }}">Number of Tables:</label>
                         {{ form.count }}
                         {% if form.instance.pk %}
                             <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
                         {% endif %}
-                        <span class="remove-table">- Entfernen</span>
+                        <span class="remove-table">- Remove</span>
                     </div>
                 {% endfor %}
             </div>
             <div id="empty-table-form-template" style="display: none;">
                 <div class="form-group">
-                    <h3 class="group-header">Tischgruppe __prefix__</h3>
-                    <label for="id_tables-__prefix__-size">Tischgröße (Personen):</label>
+                    <h3 class="group-header">Table Group __prefix__</h3>
+                    <label for="id_tables-__prefix__-size">Table Size (persons):</label>
                     <input type="number" name="tables-__prefix__-size" id="id_tables-__prefix__-size" min="1">
-                    <label for="id_tables-__prefix__-count">Anzahl der Tische:</label>
+                    <label for="id_tables-__prefix__-count">Number of Tables:</label>
                     <input type="number" name="tables-__prefix__-count" id="id_tables-__prefix__-count" min="1">
-                    <span class="remove-table">- Entfernen</span>
+                    <span class="remove-table">- Remove</span>
                 </div>
             </div>
-            <span id="add-table" class="add-table">+ Weiteren Tisch hinzufügen</span>
+            <span id="add-table" class="add-table">+ Add another table</span>
 
             <div class="inline-formset" id="menu-formset">
-                <h2>Speisekarte</h2>
+                <h2>Menu</h2>
                 {{ menu_formset.management_form }}
                 {% for form in menu_formset %}
                     <div class="form-group">
-                        <h3 class="group-header">Menüpunkt {{ forloop.counter }}</h3>
+                        <h3 class="group-header">Menu Item {{ forloop.counter }}</h3>
                         <label for="{{ form.name.id_for_label }}">Name:</label>
                         {{ form.name }}
-                        <label for="{{ form.price.id_for_label }}">Preis (€):</label>
+                        <label for="{{ form.price.id_for_label }}">Price (€):</label>
                         {{ form.price }}
                         {% if form.instance.pk %}
                             <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
                         {% endif %}
-                        <span class="remove-item">- Entfernen</span>
+                        <span class="remove-item">- Remove</span>
                     </div>
                 {% endfor %}
             </div>
             <div id="empty-item-form-template" style="display: none;">
                 <div class="form-group">
-                    <h3 class="group-header">Menüpunkt __prefix__</h3>
+                    <h3 class="group-header">Menu Item __prefix__</h3>
                     <label for="id_menu_items-__prefix__-name">Name:</label>
                     <input type="text" name="menu_items-__prefix__-name" id="id_menu_items-__prefix__-name">
-                    <label for="id_menu_items-__prefix__-price">Preis (€):</label>
+                    <label for="id_menu_items-__prefix__-price">Price (€):</label>
                     <input type="number" step="0.01" name="menu_items-__prefix__-price" id="id_menu_items-__prefix__-price" min="0">
-                    <span class="remove-item">- Entfernen</span>
+                    <span class="remove-item">- Remove</span>
                 </div>
             </div>
-            <span id="add-item" class="add-item">+ Weiteren Menüpunkt hinzufügen</span>
+            <span id="add-item" class="add-item">+ Add another menu item</span>
 
-            <button type="submit">Speichern</button>
+            <button type="submit">Save</button>
         </form>
 
         <!-- Anzeigen der Fehler -->
         {% if form.errors %}
             <div class="form-errors">
-                <h2>Formfehler:</h2>
+                <h2>Form Errors:</h2>
                 <ul>
                     {% for field, errors in form.errors.items %}
                         <li>{{ field }}: {{ errors }}</li>
@@ -279,7 +261,7 @@
 
         {% if table_formset.errors %}
             <div class="formset-errors">
-                <h2>Fehler im Tisch-Formularsatz:</h2>
+                <h2>Table Formset Errors:</h2>
                 <ul>
                     {% for form in table_formset %}
                         {% for field, errors in form.errors.items %}
@@ -292,7 +274,7 @@
 
         {% if menu_formset.errors %}
             <div class="formset-errors">
-                <h2>Fehler im Menü-Formularsatz:</h2>
+                <h2>Menu Formset Errors:</h2>
                 <ul>
                     {% for form in menu_formset %}
                         {% for field, errors in form.errors.items %}
