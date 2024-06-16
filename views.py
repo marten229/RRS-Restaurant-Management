@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import RestaurantForm, TableFormSet, MenuItemFormSet
 from .models import Restaurant
 from TableManagement.models import Table
+from django.contrib.auth.decorators import login_required
+from UserManagement.decorators import role_and_restaurant_required
 
 def create_restaurant(request):
     if request.method == 'POST':
@@ -37,6 +39,8 @@ def restaurant_list(request):
     restaurants = Restaurant.objects.all()
     return render(request, 'restaurant/restaurant_list.html', {'restaurants': restaurants})
 
+@login_required
+@role_and_restaurant_required(['administrator', 'restaurant_owner'])
 def edit_restaurant(request, pk):
     restaurant = get_object_or_404(Restaurant, id=pk)
     if request.method == 'POST':
