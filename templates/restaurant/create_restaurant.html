@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Restaurant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="time"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-group label {
+            margin-right: 10px;
+        }
+        .inline-formset {
+            margin-top: 20px;
+        }
+        .inline-formset .form-group {
+            margin-bottom: 10px;
+            position: relative;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .add-item, .remove-item, .add-table, .remove-table {
+            cursor: pointer;
+            color: blue;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .remove-item, .remove-table {
+            color: red;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+        .form-errors, .formset-errors {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function updateTotalForms(formsetDiv, totalFormsId) {
+                var totalForms = document.getElementById(totalFormsId);
+                var formGroups = formsetDiv.querySelectorAll(".form-group:not(.removed)");
+                totalForms.value = formGroups.length;
+            }
+
+            function addRemoveEvent(button, formsetDiv, totalFormsId) {
+                button.addEventListener('click', function() {
+                    var formGroup = this.parentElement;
+                    formGroup.classList.add('removed');
+                    formGroup.style.display = 'none';
+                    updateTotalForms(formsetDiv, totalFormsId);
+                });
+            }
+
+            function addForm(formsetDiv, totalFormsId, templateId, removeClass) {
+                var totalForms = document.getElementById(totalFormsId);
+                if (!totalForms) {
+                    console.error("Element with ID '" + totalFormsId + "' not found.");
+                    return;
+                }
+                
+                var currentFormCount = parseInt(totalForms.value) || 0;
+                var emptyFormTemplate = document.getElementById(templateId).innerHTML;
+                if (!emptyFormTemplate) {
+                    console.error("Template with ID '" + templateId + "' not found.");
+                    return;
+                }
+            
+                var newForm = document.createElement("div");
+                newForm.classList.add("form-group");
+                newForm.innerHTML = emptyFormTemplate.replace(/__prefix__/g, currentFormCount);
+                newForm.style.display = 'block';
+            
+                var removeButton = newForm.querySelector(removeClass);
+                if (removeButton) {
+                    addRemoveEvent(removeButton, formsetDiv, totalFormsId);
+                } else {
+                    console.error("Remove button with class '" + removeClass + "' not found.");
+                }
+            
+                formsetDiv.appendChild(newForm);
+                totalForms.value = currentFormCount + 1;
+            }
+            
+
+            document.getElementById("add-table").addEventListener("click", function() {
+                addForm(document.getElementById("table-formset"), "id_tables-TOTAL_FORMS", "empty-table-form-template", '.remove-table');
+            });
+
+            document.getElementById("add-item").addEventListener("click", function() {
+                addForm(document.getElementById("menu-formset"), "id_menu_items-TOTAL_FORMS", "empty-item-form-template", '.remove-item');
+            });
+
+            var tableFormset = document.getElementById("table-formset");
+            var menuFormset = document.getElementById("menu-formset");
+
+            var removeButtons = document.querySelectorAll('.remove-table');
+            removeButtons.forEach(function(button) {
+                addRemoveEvent(button, tableFormset, "id_tables-TOTAL_FORMS");
+            });
+
+            removeButtons = document.querySelectorAll('.remove-item');
+            removeButtons.forEach(function(button) {
+                addRemoveEvent(button, menuFormset, "id_menu_items-TOTAL_FORMS");
+            });
+
+            updateTotalForms(tableFormset, "id_tables-TOTAL_FORMS");
+            updateTotalForms(menuFormset, "id_menu_items-TOTAL_FORMS");
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Restaurant</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="id_name">Name:</label>
+            {{ form.name }}
+            <label for="id_description">Beschreibung:</label>
+            {{ form.description }}
+            <label for="id_street">Straße:</label>
+            {{ form.street }}
+            <label for="id_city">Stadt:</label>
+            {{ form.city }}
+            <label for="id_house_number">Hausnummer:</label>
+            {{ form.house_number }}
+            <label for="id_contact_email">Kontakt E-Mail:</label>
+            {{ form.contact_email }}
+            <label for="id_contact_phone">Kontakt Telefon:</label>
+            {{ form.contact_phone }}
+            <label for="id_opening_time">Öffnungszeit:</label>
+            {{ form.opening_time }}
+            <label for="id_closing_time">Schließzeit:</label>
+            {{ form.closing_time }}
+            <label for="id_opening_days">Öffnungstage:</label>
+            <div class="checkbox-group">
+                {{ form.opening_days }}
+            </div>
+            <label for="id_photo">Foto:</label>
+            {{ form.photo }}
+            <label for="id_cuisines">Küchen:</label>
+            <div class="checkbox-group">
+                {{ form.cuisines }}
+            </div>
+
+            <div class="inline-formset" id="table-formset">
+                <h2>Tische</h2>
+                {{ table_formset.management_form }}
+                {% for form in table_formset %}
+                    <div class="form-group">
+                        <h3 class="group-header">Tisch Gruppe {{ forloop.counter }}</h3>
+                        <label for="{{ form.size.id_for_label }}">Tischgröße (Personen):</label>
+                        {{ form.size }}
+                        {% if form.instance.pk %}
+                            <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
+                        {% endif %}
+                        <span class="remove-table">- Entfernen</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="empty-table-form-template" style="display: none;">
+                <div class="form-group">
+                    <h3 class="group-header">Tisch Gruppe __prefix__</h3>
+                    <label for="id_tables-__prefix__-size">Tischgröße (Personen):</label>
+                    <input type="number" name="tables-__prefix__-size" id="id_tables-__prefix__-size" min="1">
+                    <span class="remove-table">- Entfernen</span>
+                </div>
+            </div>
+            <span id="add-table" class="add-table">+ Tisch hinzufügen</span>
+
+            <div class="inline-formset" id="menu-formset">
+                <h2>Speisekarte</h2>
+                {{ menu_formset.management_form }}
+                {% for form in menu_formset %}
+                    <div class="form-group">
+                        <h3 class="group-header">Speisekartenposition {{ forloop.counter }}</h3>
+                        <label for="{{ form.name.id_for_label }}">Name:</label>
+                        {{ form.name }}
+                        <label for="{{ form.price.id_for_label }}">Preis (€):</label>
+                        {{ form.price }}
+                        {% if form.instance.pk %}
+                            <input type="hidden" name="{{ form.prefix }}-id" value="{{ form.instance.pk }}">
+                        {% endif %}
+                        <span class="remove-item">- Entfernen</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="empty-item-form-template" style="display: none;">
+                <div class="form-group">
+                    <h3 class="group-header">Speisekartenposition __prefix__</h3>
+                    <label for="id_menu_items-__prefix__-name">Name:</label>
+                    <input type="text" name="menu_items-__prefix__-name" id="id_menu_items-__prefix__-name">
+                    <label for="id_menu_items-__prefix__-price">Preis (€):</label>
+                    <input type="number" step="0.01" name="menu_items-__prefix__-price" id="id_menu_items-__prefix__-price" min="0">
+                    <span class="remove-item">- Entfernen</span>
+                </div>
+            </div>
+            <span id="add-item" class="add-item">+ Speisekartenposition hinzufügen</span>
+
+            <button type="submit">Speichern</button>
+        </form>
+
+        <!-- Anzeigen der Fehler -->
+        {% if form.errors %}
+            <div class="form-errors">
+                <h2>Formularfehler:</h2>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field }}: {{ errors }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if table_formset.errors %}
+            <div class="formset-errors">
+                <h2>Fehler im Tisch-Formset:</h2>
+                <ul>
+                    {% for form in table_formset %}
+                        {% for field, errors in form.errors.items %}
+                            <li>{{ field }}: {{ errors }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if menu_formset.errors %}
+            <div class="formset-errors">
+                <h2>Fehler im Speisekarten-Formset:</h2>
+                <ul>
+                    {% for form in menu_formset %}
+                        {% for field, errors in form.errors.items %}
+                            <li>{{ field }}: {{ errors }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
