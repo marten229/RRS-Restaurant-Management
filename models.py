@@ -8,13 +8,13 @@ class Cuisine(models.Model):
 
 class OpeningDay(models.Model):
     DAY_CHOICES = [
-        ('Mon', 'Monday'),
-        ('Tue', 'Tuesday'),
-        ('Wed', 'Wednesday'),
-        ('Thu', 'Thursday'),
-        ('Fri', 'Friday'),
-        ('Sat', 'Saturday'),
-        ('Sun', 'Sunday'),
+        ('Mon', 'Montag'),
+        ('Tue', 'Dienstag'),
+        ('Wed', 'Mittwoch'),
+        ('Thu', 'Donnerstag'),
+        ('Fri', 'Freitag'),
+        ('Sat', 'Samstag'),
+        ('Sun', 'Sonntag'),
     ]
     day = models.CharField(max_length=3, choices=DAY_CHOICES, unique=True)
 
@@ -35,8 +35,20 @@ class Restaurant(models.Model):
     photo = models.ImageField(upload_to='restaurant_photos/')
     cuisines = models.ManyToManyField(Cuisine)
 
+    def check_ifopendayandtime(self, date, time): 
+        day_short = date.strftime('%a')[:3]
+        if self.opening_days.filter(day=day_short).exists():
+            if self.opening_time <= time <= self.closing_time:
+                return True
+        return False
+    
+
     def __str__(self):
         return self.name
+
+    def __str__(self):
+        return self.name
+
 
 class MenuItem(models.Model):
     restaurant = models.ForeignKey(Restaurant, related_name='menu_items', on_delete=models.CASCADE)

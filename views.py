@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import RestaurantForm, TableFormSet, MenuItemFormSet
 from .models import Restaurant
+from django.contrib.auth.decorators import login_required
+from UserManagement.decorators import role_required, role_and_restaurant_required
 
+@login_required
+@role_required(['administrator', 'restaurant_owner'])
 def create_restaurant(request):
     if request.method == 'POST':
         form = RestaurantForm(request.POST, request.FILES)
@@ -13,7 +17,9 @@ def create_restaurant(request):
             table_formset.save()
             menu_formset.instance = restaurant
             menu_formset.save()
-            return redirect('restaurant_list')
+
+            request.user.restaurants.add(restaurant)
+            return redirect('dashboard')
     else:
         form = RestaurantForm()
         table_formset = TableFormSet()
@@ -29,6 +35,8 @@ def restaurant_list(request):
     restaurants = Restaurant.objects.all()
     return render(request, 'restaurant/restaurant_list.html', {'restaurants': restaurants})
 
+@login_required
+@role_and_restaurant_required(['administrator', 'restaurant_owner'])
 def edit_restaurant(request, pk):
     restaurant = get_object_or_404(Restaurant, id=pk)
     if request.method == 'POST':
@@ -39,7 +47,7 @@ def edit_restaurant(request, pk):
             form.save()
             table_formset.save()
             menu_formset.save()
-            return redirect('restaurant_list')
+            return redirect('dashboard_detail', pk=pk)
     else:
         form = RestaurantForm(instance=restaurant)
         table_formset = TableFormSet(instance=restaurant)

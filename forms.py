@@ -2,7 +2,6 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import Restaurant, Cuisine, OpeningDay, MenuItem
 from TableManagement.models import Table
-
 class TableForm(forms.ModelForm):
     class Meta:
         model = Table
