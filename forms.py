@@ -4,13 +4,11 @@ from .models import Restaurant, Cuisine, OpeningDay, MenuItem
 from TableManagement.models import Table
 
 class TableForm(forms.ModelForm):
-    count = forms.IntegerField(min_value=1, label="Number of Tables", required=True)
-
     class Meta:
         model = Table
-        fields = ['size', 'count']
+        fields = ['size']
 
-TableFormSet = inlineformset_factory(Restaurant, Table, form=TableForm, extra=0, can_delete=True)
+TableFormSet = inlineformset_factory(Restaurant, Table, form=TableForm, extra=1, can_delete=True)
 
 class MenuItemForm(forms.ModelForm):
     class Meta:

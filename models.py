@@ -1,5 +1,4 @@
 from django.db import models
-#from TableManagement.models import Table
 
 class Cuisine(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -25,8 +24,8 @@ class OpeningDay(models.Model):
 class Restaurant(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    street = models.CharField(max_length=255, default='Unknown Street')
-    city = models.CharField(max_length=100, default='Unknown City')
+    street = models.CharField(max_length=255, default='Strasse')
+    city = models.CharField(max_length=100, default='Stadt')
     house_number = models.CharField(max_length=10, default='0')
     contact_email = models.EmailField()
     contact_phone = models.CharField(max_length=15)
@@ -35,14 +34,6 @@ class Restaurant(models.Model):
     opening_days = models.ManyToManyField(OpeningDay)
     photo = models.ImageField(upload_to='restaurant_photos/')
     cuisines = models.ManyToManyField(Cuisine)
-
-    def check_ifopendayandtime(self, date, time): 
-        day_short = date.strftime('%a')[:3]
-        if self.opening_days.filter(day=day_short).exists():
-            if self.opening_time <= time <= self.closing_time:
-                return True
-        return False
-    
 
     def __str__(self):
         return self.name
